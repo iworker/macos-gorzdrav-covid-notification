@@ -1,0 +1,17 @@
+#!/bin/bash
+
+FILE=$(date '+%Y-%m-%d_%H_%M_%S').json
+
+CLINIC=211
+SERVICE=79
+
+mkdir -p ${HOME}/vaccine && cd ${HOME}/vaccine
+
+curl "https://gorzdrav.spb.ru/_api/api/lpu/${CLINIC}/speciality" -o ${FILE}
+
+FREE_TICKET=$(cat ${FILE} | jq '.result[] | select(.id == "'${SERVICE}'") | .countFreeTicket')
+FREE_PARTICIPANT=$(cat ${FILE} | jq '.result[] | select(.id == "'${SERVICE}'") | .countFreeParticipant')
+
+if [[ "$FREE_TICKET" -gt "0" || "$FREE_PARTICIPANT" -gt 0 ]]; then
+  osascript -e "display notification \"Tickets: ${FREE_TICKET}\nParticipants: ${FREE_PARTICIPANT}\" with title \"Vaccine\" sound name \"Submarine\""
+fi
